@@ -10,9 +10,9 @@
 UENUM()
 enum class ECombinerType : uint8
 {
-	CT_AND,
-	CT_OR,
-	CT_SEQUENCE
+	AND,
+	OR,
+	SEQUENCE
 };
 
 /**
@@ -24,6 +24,8 @@ class FIRSTPERSONPROJECT_API AObjectiveSet : public AObjective
 	GENERATED_BODY()
 	
 public:
+
+	AObjectiveSet() { ObjectiveType = EObjectiveType::SET; }
 
 	// Collection of objectives that will be combined for this set
 	UPROPERTY(EditAnywhere)
@@ -41,7 +43,12 @@ public:
 	void Deactivate() override;
 private:
 
+	// TODO: Implement objective progression
 	int CurrentObjectiveIndex = 0;
 
+	UFUNCTION()
+	void HandleObjectiveProgress();
+
+	UFUNCTION()
 	void HandleObjectiveComplete();
 };

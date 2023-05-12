@@ -5,15 +5,26 @@
 
 void AObjectiveActivate::Activate()
 {
-	TargetObject->OnActivated.AddDynamic(this, &AObjectiveActivate::HandleOnActivated);
+	if (IsValid(TargetObject))
+	{
+		TargetObject->OnActivated.AddDynamic(this, &AObjectiveActivate::HandleOnActivated);
+	}
 }
 
 void AObjectiveActivate::Deactivate()
 {
-	TargetObject->OnActivated.RemoveDynamic(this, &AObjectiveActivate::HandleOnActivated);
+	if (IsValid(TargetObject))
+	{
+		TargetObject->OnActivated.RemoveDynamic(this, &AObjectiveActivate::HandleOnActivated);
+	}
 }
 
 void AObjectiveActivate::HandleOnActivated()
 {
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::White, TEXT("Object activated"));
+	}
+	Deactivate();
 	DoComplete();
 }

@@ -17,6 +17,8 @@ class FIRSTPERSONPROJECT_API AObjectiveActivate : public AObjective
 	
 public:
 
+	AObjectiveActivate() { ObjectiveType = EObjectiveType::ACTIVATE; }
+
 	// The object that must be activated
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<AActivatableActor> TargetObject;
@@ -27,5 +29,6 @@ public:
 	
 private:
 
+	UFUNCTION()
 	void HandleOnActivated();
 };

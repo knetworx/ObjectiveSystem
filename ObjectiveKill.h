@@ -16,6 +16,7 @@ class FIRSTPERSONPROJECT_API AObjectiveKill : public AObjective
 	GENERATED_BODY()
 	
 public:
+	AObjectiveKill() { ObjectiveType = EObjectiveType::KILL; }
 
 	// The enemy we want to kill
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
@@ -27,5 +28,6 @@ public:
 
 private:
 
+	UFUNCTION()
 	void HandleOnDeath();
 };

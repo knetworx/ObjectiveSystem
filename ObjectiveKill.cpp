@@ -21,6 +21,10 @@ void AObjectiveKill::Deactivate()
 
 void AObjectiveKill::HandleOnDeath()
 {
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::White, TEXT("Enemy killed"));
+	}
 	Deactivate();
 	DoComplete();
 }

@@ -11,16 +11,16 @@ void AObjectiveSet::UpdateProgress()
 	{
 		switch (CombinerType)
 		{
-			case ECombinerType::CT_AND:
+			case ECombinerType::AND:
 				TotalProgress += ProgressPerObjective * Objective->GetProgressPct();
 				break;
-			case ECombinerType::CT_OR:
+			case ECombinerType::OR:
 				if (Objective->GetProgressPct() > TotalProgress)
 				{
 					TotalProgress = Objective->GetProgressPct();
 				}
 				break;
-			case ECombinerType::CT_SEQUENCE:
+			case ECombinerType::SEQUENCE:
 				if (FMath::IsNearlyEqual(Objective->GetProgressPct(), 1.0f))
 				{
 					TotalProgress += ProgressPerObjective;
@@ -38,23 +38,58 @@ void AObjectiveSet::UpdateProgress()
 
 void AObjectiveSet::Activate()
 {
-	for (AObjective* Objective : Objectives)
+	if (CombinerType == ECombinerType::SEQUENCE)
 	{
-		Objective->OnComplete.AddDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
+		Objectives[CurrentObjectiveIndex]->Activate();
+	}
+	else
+	{
+		for (AObjective* Objective : Objectives)
+		{
+			Objective->OnProgress.AddDynamic(this, &AObjectiveSet::HandleObjectiveProgress);
+			Objective->OnComplete.AddDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
+			Objective->Activate();
+		}
 	}
 }
 
 void AObjectiveSet::Deactivate()
 {
-	for (AObjective* Objective : Objectives)
+	if (CombinerType == ECombinerType::SEQUENCE)
 	{
-		Objective->OnComplete.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
+		Objectives[CurrentObjectiveIndex]->Deactivate();
+	}
+	else
+	{
+		for (AObjective* Objective : Objectives)
+		{
+			Objective->OnProgress.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveProgress);
+			Objective->OnComplete.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
+			Objective->Deactivate();
+		}
+	}
+}
+
+void AObjectiveSet::HandleObjectiveProgress()
+{
+	// Simply updating the progress should handle setting the percentage and triggering completion
+	// for the ObjectiveSet if necessary, but keeping this separate in case I want to do more here
+	UpdateProgress();
+	if (CombinerType == ECombinerType::SEQUENCE)
+	{
+		if (CurrentObjectiveIndex < Objectives.Num() && Objectives[CurrentObjectiveIndex]->IsComplete())
+		{
+			Objectives[CurrentObjectiveIndex++]->Deactivate();
+			Objectives[CurrentObjectiveIndex]->Activate();
+		}
 	}
 }
 
 void AObjectiveSet::HandleObjectiveComplete()
 {
-	// Simply updating the progress should handle setting the percentage and triggering completion
-	// for the ObjectiveSet if necessary, but keeping this separate in case I want to do more here
-	UpdateProgress();
+	HandleObjectiveProgress();
+	if (GetProgressPct() == 1.0f && GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::White, TEXT("Objective set complete"));
+	}
 }

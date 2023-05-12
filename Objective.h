@@ -6,15 +6,17 @@
 #include "Engine/DataAsset.h"
 #include "Objective.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnProgress);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnComplete);
 
 UENUM()
 enum class EObjectiveType : uint8
 {
-	OT_KILL,
-	OT_LOCATION,
-	OT_ACTIVATE,
-	OT_SET
+	INVALID,
+	KILL,
+	LOCATION,
+	ACTIVATE,
+	SET
 };
 
 /**
@@ -26,7 +28,7 @@ class FIRSTPERSONPROJECT_API AObjective : public AActor
 	GENERATED_BODY()
 
 protected:
-	AObjective() {}
+	AObjective() { ObjectiveType = EObjectiveType::INVALID; }
 
 	UFUNCTION(BlueprintCallable)
 	void SetProgressPct(float Pct);
@@ -39,11 +41,18 @@ public:
 	EObjectiveType ObjectiveType;
 
 	UPROPERTY(BlueprintAssignable)
+	FOnProgress OnProgress;
+
+	UPROPERTY(BlueprintAssignable)
 	FOnComplete OnComplete;
 
 	// Returns the current progress for this objective
 	UFUNCTION(BlueprintGetter)
-	virtual float GetProgressPct() const { return ProgressPct; }
+	float GetProgressPct() const { return ProgressPct; }
+
+	// Returns whether our progress is 100% (accounting for potential floating point errors)
+	UFUNCTION(BlueprintGetter)
+	bool IsComplete() const { return FMath::IsNearlyEqual(GetProgressPct(), 1.0f); }
 
 	// Tell the objective system that this objective is complete
 	UFUNCTION(BlueprintCallable)

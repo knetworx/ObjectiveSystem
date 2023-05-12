@@ -15,6 +15,9 @@ class FIRSTPERSONPROJECT_API AObjectiveLocation : public AObjective
 	GENERATED_BODY()
 	
 public:
+
+	AObjectiveLocation() { ObjectiveType = EObjectiveType::LOCATION; }
+
 	// The actor that will function as the location trigger
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> LocationTrigger;
@@ -25,5 +28,6 @@ public:
 
 private:
 
+	UFUNCTION()
 	void HandleOnLocationReached(AActor* OverlappedActor, AActor* OtherActor);
 };
