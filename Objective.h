@@ -51,11 +51,11 @@ public:
 
 	// Register for any callbacks or other setup necessary for processing this objective
 	UFUNCTION(BlueprintCallable)
-	virtual void Activate() = 0;
+	virtual void Activate() {}
 
 	// Unregister for any callbacks or other cleanup necessary for this objective
 	UFUNCTION(BlueprintCallable)
-	virtual void Deactivate() = 0;
+	virtual void Deactivate() {}
 
 private:
 	float ProgressPct;

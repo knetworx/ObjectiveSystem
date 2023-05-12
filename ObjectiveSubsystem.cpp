@@ -22,5 +22,6 @@ void UObjectiveSubsystem::DeactivateCurrentMission()
 	{
 		ActiveMission->Deactivate();
 		OnMissionDeactivated.Broadcast(ActiveMission);
+		ActiveMission = nullptr;
 	}
 }

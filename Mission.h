@@ -23,10 +23,4 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void Activate() = 0;
-
-	UFUNCTION(BlueprintCallable)
-	virtual void Deactivate() = 0;
 };
