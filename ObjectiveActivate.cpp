@@ -5,6 +5,7 @@
 
 void AObjectiveActivate::Activate()
 {
+	Super::Activate();
 	if (IsValid(TargetObject))
 	{
 		TargetObject->OnActivated.AddDynamic(this, &AObjectiveActivate::HandleOnActivated);
@@ -13,6 +14,7 @@ void AObjectiveActivate::Activate()
 
 void AObjectiveActivate::Deactivate()
 {
+	Super::Deactivate();
 	if (IsValid(TargetObject))
 	{
 		TargetObject->OnActivated.RemoveDynamic(this, &AObjectiveActivate::HandleOnActivated);
@@ -21,10 +23,7 @@ void AObjectiveActivate::Deactivate()
 
 void AObjectiveActivate::HandleOnActivated()
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::White, TEXT("Object activated"));
-	}
+	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Object activated for '%s'"), *Name.ToString()));
 	Deactivate();
 	DoComplete();
 }

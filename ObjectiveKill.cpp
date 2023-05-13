@@ -5,6 +5,7 @@
 
 void AObjectiveKill::Activate()
 {
+	Super::Activate();
 	if (IsValid(TargetCharacter))
 	{
 		TargetCharacter->OnDeath.AddDynamic(this, &AObjectiveKill::HandleOnDeath);
@@ -13,6 +14,7 @@ void AObjectiveKill::Activate()
 
 void AObjectiveKill::Deactivate()
 {
+	Super::Deactivate();
 	if (IsValid(TargetCharacter))
 	{
 		TargetCharacter->OnDeath.RemoveDynamic(this, &AObjectiveKill::HandleOnDeath);
@@ -21,10 +23,7 @@ void AObjectiveKill::Deactivate()
 
 void AObjectiveKill::HandleOnDeath()
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::White, TEXT("Enemy killed"));
-	}
+	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Enemy killed for '%s'"), *Name.ToString()));
 	Deactivate();
 	DoComplete();
 }

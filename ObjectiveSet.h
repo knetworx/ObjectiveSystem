@@ -41,6 +41,8 @@ public:
 	void Activate() override;
 
 	void Deactivate() override;
+
+	void GenerateProgressReport() override;
 private:
 
 	// TODO: Implement objective progression

@@ -40,6 +40,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	EObjectiveType ObjectiveType;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsActive = false;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnProgress OnProgress;
 
@@ -60,11 +63,23 @@ public:
 
 	// Register for any callbacks or other setup necessary for processing this objective
 	UFUNCTION(BlueprintCallable)
-	virtual void Activate() {}
+	virtual void Activate();
 
 	// Unregister for any callbacks or other cleanup necessary for this objective
 	UFUNCTION(BlueprintCallable)
-	virtual void Deactivate() {}
+	virtual void Deactivate();
+
+	// I'm not really sure what kind of failure cases we have for the existing objectives (Player/Queen dies, I guess?),
+	// So I'm simply providing a blueprint callable function that will trigger it based on whatever conditions the
+	// designer might want, with options to reset progress to 0 and deactivate (both optional because maybe you want to
+	// start it over, but immediately run it again, or maybe you want to deactivate, but maintain progress)
+	UFUNCTION(BlueprintCallable)
+	virtual void BP_Fail(bool bReset, bool bDeactivate);
+
+	// Helper function to print both to the log and to the screen to see progress
+	void LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage);
+
+	virtual void GenerateProgressReport();
 
 private:
 	float ProgressPct;

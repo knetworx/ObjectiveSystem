@@ -6,6 +6,7 @@
 
 void AObjectiveLocation::Activate()
 {
+	Super::Activate();
 	if (IsValid(LocationTrigger))
 	{
 		LocationTrigger->OnActorBeginOverlap.AddDynamic(this, &AObjectiveLocation::HandleOnLocationReached);
@@ -14,6 +15,7 @@ void AObjectiveLocation::Activate()
 
 void AObjectiveLocation::Deactivate()
 {
+	Super::Deactivate();
 	if (IsValid(LocationTrigger))
 	{
 		LocationTrigger->OnActorBeginOverlap.RemoveDynamic(this, &AObjectiveLocation::HandleOnLocationReached);
@@ -25,10 +27,7 @@ void AObjectiveLocation::HandleOnLocationReached(AActor* OverlappedActor, AActor
 	const ACharacter* Character = Cast<ACharacter>(OtherActor);
 	if (IsValid(Character) && Character->IsPlayerControlled())
 	{
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::White, TEXT("Location reached"));
-		}
+		LogAndScreen(5, FColor::White, FString::Printf(TEXT("Location reached for '%s'"), *Name.ToString()));
 		Deactivate();
 		DoComplete();
 	}

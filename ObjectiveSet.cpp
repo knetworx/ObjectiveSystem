@@ -7,20 +7,31 @@ void AObjectiveSet::UpdateProgress()
 {
 	float ProgressPerObjective = 1.0f / Objectives.Num();
 	float TotalProgress = 0.0f;
-	for (AObjective* Objective : Objectives)
+	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Updating progress for '%s'"), *Name.ToString()));
+	if (CombinerType == ECombinerType::SEQUENCE)
 	{
-		switch (CombinerType)
+		// 100% for each step completed + progress on current step
+		LogAndScreen(5, FColor::White, FString::Printf(TEXT("(SEQUENCE) Current step index = %i, progress = %f"), CurrentObjectiveIndex, Objectives[CurrentObjectiveIndex]->GetProgressPct()));
+		TotalProgress = ProgressPerObjective * (CurrentObjectiveIndex + Objectives[CurrentObjectiveIndex]->GetProgressPct());
+	}
+	else
+	{
+		for (AObjective* Objective : Objectives)
 		{
+			switch (CombinerType)
+			{
 			case ECombinerType::AND:
 				TotalProgress += ProgressPerObjective * Objective->GetProgressPct();
+				LogAndScreen(5, FColor::White, FString::Printf(TEXT("(AND) Adding progress for '%s' (%f)"), *Objective->Name.ToString(), Objective->GetProgressPct()));
 				break;
 			case ECombinerType::OR:
 				if (Objective->GetProgressPct() > TotalProgress)
 				{
 					TotalProgress = Objective->GetProgressPct();
+					LogAndScreen(5, FColor::White, FString::Printf(TEXT("(OR) Setting best progress from '%s' (%f)"), *Objective->Name.ToString(), Objective->GetProgressPct()));
 				}
 				break;
-			case ECombinerType::SEQUENCE:
+			/*case ECombinerType::SEQUENCE:
 				if (FMath::IsNearlyEqual(Objective->GetProgressPct(), 1.0f))
 				{
 					TotalProgress += ProgressPerObjective;
@@ -30,16 +41,21 @@ void AObjectiveSet::UpdateProgress()
 					SetProgressPct(TotalProgress + ProgressPerObjective * Objective->GetProgressPct());
 					return;
 				}
-				break;
+				break;*/
+			}
 		}
 	}
+	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Total progress for '%s' (%f)"), *Name.ToString(), TotalProgress));
 	SetProgressPct(TotalProgress);
 }
 
 void AObjectiveSet::Activate()
 {
+	Super::Activate();
 	if (CombinerType == ECombinerType::SEQUENCE)
 	{
+		Objectives[CurrentObjectiveIndex]->OnProgress.AddDynamic(this, &AObjectiveSet::HandleObjectiveProgress);
+		Objectives[CurrentObjectiveIndex]->OnComplete.AddDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
 		Objectives[CurrentObjectiveIndex]->Activate();
 	}
 	else
@@ -55,8 +71,11 @@ void AObjectiveSet::Activate()
 
 void AObjectiveSet::Deactivate()
 {
+	Super::Deactivate();
 	if (CombinerType == ECombinerType::SEQUENCE)
 	{
+		Objectives[CurrentObjectiveIndex]->OnProgress.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveProgress);
+		Objectives[CurrentObjectiveIndex]->OnComplete.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
 		Objectives[CurrentObjectiveIndex]->Deactivate();
 	}
 	else
@@ -70,26 +89,46 @@ void AObjectiveSet::Deactivate()
 	}
 }
 
+void AObjectiveSet::GenerateProgressReport()
+{
+	Super::GenerateProgressReport();
+	for (AObjective* Objective : Objectives)
+	{
+		Objective->GenerateProgressReport();
+	}
+}
+
 void AObjectiveSet::HandleObjectiveProgress()
 {
 	// Simply updating the progress should handle setting the percentage and triggering completion
 	// for the ObjectiveSet if necessary, but keeping this separate in case I want to do more here
 	UpdateProgress();
-	if (CombinerType == ECombinerType::SEQUENCE)
-	{
-		if (CurrentObjectiveIndex < Objectives.Num() && Objectives[CurrentObjectiveIndex]->IsComplete())
-		{
-			Objectives[CurrentObjectiveIndex++]->Deactivate();
-			Objectives[CurrentObjectiveIndex]->Activate();
-		}
-	}
 }
 
 void AObjectiveSet::HandleObjectiveComplete()
 {
 	HandleObjectiveProgress();
-	if (GetProgressPct() == 1.0f && GEngine)
+	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Objective set complete for '%s'"), *Name.ToString()));
+	if (CombinerType == ECombinerType::SEQUENCE)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::White, TEXT("Objective set complete"));
+		if (CurrentObjectiveIndex < Objectives.Num() && Objectives[CurrentObjectiveIndex]->IsComplete())
+		{
+			LogAndScreen(5, FColor::White, FString::Printf(TEXT("Deactivating index %d"), CurrentObjectiveIndex));
+			Objectives[CurrentObjectiveIndex++]->Deactivate();
+			if (CurrentObjectiveIndex < Objectives.Num())
+			{
+				LogAndScreen(5, FColor::White, FString::Printf(TEXT("Activating index %d"), CurrentObjectiveIndex));
+				Objectives[CurrentObjectiveIndex]->Activate();
+			}
+		}
+		else
+		{
+			LogAndScreen(5, FColor::White, TEXT("Not advancing objective for some reason"));
+		}
+	}
+	if (IsComplete())
+	{
+		Deactivate();
+		DoComplete();
 	}
 }

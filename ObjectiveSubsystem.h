@@ -33,6 +33,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void DeactivateCurrentMission();
 
+	UFUNCTION(BlueprintCallable)
+	void GenerateProgressReport();
+
+	// Helper function to print both to the log and to the screen to see progress
+	void LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage);
+
 private:
 	TObjectPtr<AObjectiveSet> ActiveMission;
 };

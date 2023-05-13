@@ -25,3 +25,26 @@ void UObjectiveSubsystem::DeactivateCurrentMission()
 		ActiveMission = nullptr;
 	}
 }
+
+void UObjectiveSubsystem::GenerateProgressReport()
+{
+	LogAndScreen(20, FColor::Purple, TEXT("--------------- PROGRESS REPORT ---------------"));
+	if (ActiveMission)
+	{
+		ActiveMission->GenerateProgressReport();
+	}
+	else
+	{
+		LogAndScreen(20, FColor::Purple, TEXT("No active mission"));
+	}
+	LogAndScreen(20, FColor::Purple, TEXT("-----------------------------------------------"));
+}
+
+void UObjectiveSubsystem::LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage)
+{
+	UE_LOG(LogTemp, Error, TEXT("%s"), *FormattedMessage);
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, Duration, Color, FormattedMessage);
+	}
+}
