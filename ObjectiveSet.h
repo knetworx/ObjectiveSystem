@@ -45,12 +45,15 @@ public:
 	void GenerateProgressReport() override;
 private:
 
-	// TODO: Implement objective progression
 	int CurrentObjectiveIndex = 0;
 
 	UFUNCTION()
-	void HandleObjectiveProgress();
+	void HandleSubObjectiveProgress();
 
 	UFUNCTION()
-	void HandleObjectiveComplete();
+	void HandleSubObjectiveComplete();
+
+	void ActivateSubObjective(AObjective* SubObjective);
+
+	void DeactivateSubObjective(AObjective* SubObjective);
 };

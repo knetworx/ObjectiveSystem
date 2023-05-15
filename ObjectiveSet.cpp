@@ -31,17 +31,6 @@ void AObjectiveSet::UpdateProgress()
 					LogAndScreen(5, FColor::White, FString::Printf(TEXT("(OR) Setting best progress from '%s' (%f)"), *Objective->Name.ToString(), Objective->GetProgressPct()));
 				}
 				break;
-			/*case ECombinerType::SEQUENCE:
-				if (FMath::IsNearlyEqual(Objective->GetProgressPct(), 1.0f))
-				{
-					TotalProgress += ProgressPerObjective;
-				}
-				else
-				{
-					SetProgressPct(TotalProgress + ProgressPerObjective * Objective->GetProgressPct());
-					return;
-				}
-				break;*/
 			}
 		}
 	}
@@ -54,17 +43,16 @@ void AObjectiveSet::Activate()
 	Super::Activate();
 	if (CombinerType == ECombinerType::SEQUENCE)
 	{
-		Objectives[CurrentObjectiveIndex]->OnProgress.AddDynamic(this, &AObjectiveSet::HandleObjectiveProgress);
-		Objectives[CurrentObjectiveIndex]->OnComplete.AddDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
-		Objectives[CurrentObjectiveIndex]->Activate();
+		if (CurrentObjectiveIndex < Objectives.Num())
+		{
+			ActivateSubObjective(Objectives[CurrentObjectiveIndex]);
+		}
 	}
 	else
 	{
 		for (AObjective* Objective : Objectives)
 		{
-			Objective->OnProgress.AddDynamic(this, &AObjectiveSet::HandleObjectiveProgress);
-			Objective->OnComplete.AddDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
-			Objective->Activate();
+			ActivateSubObjective(Objective);
 		}
 	}
 }
@@ -74,17 +62,16 @@ void AObjectiveSet::Deactivate()
 	Super::Deactivate();
 	if (CombinerType == ECombinerType::SEQUENCE)
 	{
-		Objectives[CurrentObjectiveIndex]->OnProgress.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveProgress);
-		Objectives[CurrentObjectiveIndex]->OnComplete.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
-		Objectives[CurrentObjectiveIndex]->Deactivate();
+		if (CurrentObjectiveIndex < Objectives.Num())
+		{
+			DeactivateSubObjective(Objectives[CurrentObjectiveIndex]);
+		}
 	}
 	else
 	{
 		for (AObjective* Objective : Objectives)
 		{
-			Objective->OnProgress.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveProgress);
-			Objective->OnComplete.RemoveDynamic(this, &AObjectiveSet::HandleObjectiveComplete);
-			Objective->Deactivate();
+			DeactivateSubObjective(Objective);
 		}
 	}
 }
@@ -98,27 +85,27 @@ void AObjectiveSet::GenerateProgressReport()
 	}
 }
 
-void AObjectiveSet::HandleObjectiveProgress()
+void AObjectiveSet::HandleSubObjectiveProgress()
 {
 	// Simply updating the progress should handle setting the percentage and triggering completion
 	// for the ObjectiveSet if necessary, but keeping this separate in case I want to do more here
 	UpdateProgress();
 }
 
-void AObjectiveSet::HandleObjectiveComplete()
+void AObjectiveSet::HandleSubObjectiveComplete()
 {
-	HandleObjectiveProgress();
+	HandleSubObjectiveProgress();
 	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Objective set complete for '%s'"), *Name.ToString()));
 	if (CombinerType == ECombinerType::SEQUENCE)
 	{
 		if (CurrentObjectiveIndex < Objectives.Num() && Objectives[CurrentObjectiveIndex]->IsComplete())
 		{
 			LogAndScreen(5, FColor::White, FString::Printf(TEXT("Deactivating index %d"), CurrentObjectiveIndex));
-			Objectives[CurrentObjectiveIndex++]->Deactivate();
+			DeactivateSubObjective(Objectives[CurrentObjectiveIndex++]);
 			if (CurrentObjectiveIndex < Objectives.Num())
 			{
 				LogAndScreen(5, FColor::White, FString::Printf(TEXT("Activating index %d"), CurrentObjectiveIndex));
-				Objectives[CurrentObjectiveIndex]->Activate();
+				ActivateSubObjective(Objectives[CurrentObjectiveIndex]);
 			}
 		}
 		else
@@ -126,9 +113,18 @@ void AObjectiveSet::HandleObjectiveComplete()
 			LogAndScreen(5, FColor::White, TEXT("Not advancing objective for some reason"));
 		}
 	}
-	if (IsComplete())
-	{
-		Deactivate();
-		DoComplete();
-	}
+}
+
+void AObjectiveSet::ActivateSubObjective(AObjective* SubObjective)
+{
+	SubObjective->OnProgress.AddDynamic(this, &AObjectiveSet::HandleSubObjectiveComplete);
+	SubObjective->OnComplete.AddDynamic(this, &AObjectiveSet::HandleSubObjectiveComplete);
+	SubObjective->Activate();
+}
+
+void AObjectiveSet::DeactivateSubObjective(AObjective* SubObjective)
+{
+	SubObjective->OnProgress.RemoveDynamic(this, &AObjectiveSet::HandleSubObjectiveComplete);
+	SubObjective->OnComplete.RemoveDynamic(this, &AObjectiveSet::HandleSubObjectiveComplete);
+	SubObjective->Deactivate();
 }

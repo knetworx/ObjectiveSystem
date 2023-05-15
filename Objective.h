@@ -8,6 +8,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnProgress);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnComplete);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFail);
 
 UENUM()
 enum class EObjectiveType : uint8
@@ -49,6 +50,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnComplete OnComplete;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnFail OnFail;
+
 	// Returns the current progress for this objective
 	UFUNCTION(BlueprintGetter)
 	float GetProgressPct() const { return ProgressPct; }
@@ -74,7 +78,7 @@ public:
 	// designer might want, with options to reset progress to 0 and deactivate (both optional because maybe you want to
 	// start it over, but immediately run it again, or maybe you want to deactivate, but maintain progress)
 	UFUNCTION(BlueprintCallable)
-	virtual void BP_Fail(bool bReset, bool bDeactivate);
+	virtual void BP_Fail(bool bReset, bool bDeactivate, bool bDoBroadcast);
 
 	// Helper function to print both to the log and to the screen to see progress
 	void LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage);

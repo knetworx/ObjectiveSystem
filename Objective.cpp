@@ -7,7 +7,7 @@ void AObjective::SetProgressPct(float Pct)
 {
 	Pct = FMath::Clamp(Pct, 0.0f, 1.0f);
 	bool bDoBroadcastComplete = false;
-	if (/*!FMath::IsNearlyEqual(ProgressPct, 1.0f) && */FMath::IsNearlyEqual(Pct, 1.0f))
+	if (!FMath::IsNearlyEqual(ProgressPct, 1.0f) && FMath::IsNearlyEqual(Pct, 1.0f))
 	{
 		Pct = 1.0f;
 		bDoBroadcastComplete = true;
@@ -39,10 +39,10 @@ void AObjective::Deactivate()
 	LogAndScreen(5, FColor::Red, FString::Printf(TEXT("Deactivating '%s'"), *Name.ToString()));
 }
 
-void AObjective::BP_Fail(bool bReset, bool bDeactivate)
+void AObjective::BP_Fail(bool bReset, bool bDeactivate, bool bDoBroadcast)
 {
-	// TODO: Maybe also add a delegate to go back to the previous step in a sequential ObjectiveSet, but that would also
-	// require logic to reactivate the previous objective, bring enemies back alive, etc.
+	// TODO: Maybe also add a delegate to go back to the previous step in a sequential ObjectiveSet, but
+	// that would also require logic to reactivate the previous objective, bring enemies back alive, etc.
 	if (bReset)
 	{
 		SetProgressPct(0.0f);
@@ -50,6 +50,16 @@ void AObjective::BP_Fail(bool bReset, bool bDeactivate)
 	if (bDeactivate)
 	{
 		Deactivate();
+	}
+
+	// Note: In reality, you might not want to broadcast a blueprint assignable delegate from a blueprint
+	// callable function (presumably one would trigger the other), but I'm not sure what failure conditions
+	// would be for the example objectives given, nor what the desired outcome would be when that condition
+	// occurs, so here we are pretending that blueprints would, in some way, both be the trigger of the
+	// failure, and also the one that ends up handling it
+	if (bDoBroadcast)
+	{
+		OnFail.Broadcast();
 	}
 }
 
