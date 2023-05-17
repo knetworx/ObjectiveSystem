@@ -2,6 +2,7 @@
 
 
 #include "Objective.h"
+#include "ObjectiveSubsystem.h"
 
 void AObjective::SetProgressPct(float Pct)
 {
@@ -17,12 +18,12 @@ void AObjective::SetProgressPct(float Pct)
 	if (bDoBroadcastComplete)
 	{
 		// Completion callback may end up being unnecessary, maybe just always broadcast progress if it changes
-		LogAndScreen(5, FColor::Cyan, FString::Printf(TEXT("Broadcasting OnComplete for '%s'"), *Name.ToString()));
+		LogAndScreen(5, FColor::Cyan, FString::Printf(TEXT("Broadcasting OnComplete for '%s'"), *Name.ToString()), true);
 		OnComplete.Broadcast();
 	}
 	else
 	{
-		LogAndScreen(5, FColor::Cyan, FString::Printf(TEXT("Broadcasting OnProgress for '%s'"), *Name.ToString()));
+		LogAndScreen(5, FColor::Cyan, FString::Printf(TEXT("Broadcasting OnProgress for '%s'"), *Name.ToString()), true);
 		OnProgress.Broadcast();
 	}
 }
@@ -63,8 +64,12 @@ void AObjective::BP_Fail(bool bReset, bool bDeactivate, bool bDoBroadcast)
 	}
 }
 
-void AObjective::LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage)
+void AObjective::LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage, bool bIsDebug)
 {
+	if (bIsDebug && !UObjectiveSubsystem::bIsSystemDebugging)
+	{
+		return;
+	}
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *FormattedMessage);
 	if (GEngine)
 	{

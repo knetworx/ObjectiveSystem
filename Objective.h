@@ -81,7 +81,7 @@ public:
 	virtual void BP_Fail(bool bReset, bool bDeactivate, bool bDoBroadcast);
 
 	// Helper function to print both to the log and to the screen to see progress
-	void LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage);
+	void LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage, bool bIsDebug = false);
 
 	virtual void GenerateProgressReport();
 

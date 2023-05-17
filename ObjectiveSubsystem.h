@@ -20,6 +20,8 @@ class FIRSTPERSONPROJECT_API UObjectiveSubsystem : public UGameInstanceSubsystem
 	
 public:
 
+	static const bool bIsSystemDebugging = false;
+
 	UPROPERTY(BlueprintAssignable)
 	FOnMissionActivated OnMissionActivated;
 
@@ -37,8 +39,14 @@ public:
 	void GenerateProgressReport();
 
 	// Helper function to print both to the log and to the screen to see progress
-	void LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage);
+	void LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage, bool bIsDebug = false);
 
 private:
 	TObjectPtr<AObjectiveSet> ActiveMission;
+
+	UFUNCTION()
+	void OnMissionComplete();
+
+	UFUNCTION()
+	void OnMissionFail();
 };

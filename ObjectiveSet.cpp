@@ -7,11 +7,11 @@ void AObjectiveSet::UpdateProgress()
 {
 	float ProgressPerObjective = 1.0f / Objectives.Num();
 	float TotalProgress = 0.0f;
-	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Updating progress for '%s'"), *Name.ToString()));
+	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Updating progress for '%s'"), *Name.ToString()), true);
 	if (CombinerType == ECombinerType::SEQUENCE)
 	{
 		// 100% for each step completed + progress on current step
-		LogAndScreen(5, FColor::White, FString::Printf(TEXT("(SEQUENCE) Current step index = %i, progress = %f"), CurrentObjectiveIndex, Objectives[CurrentObjectiveIndex]->GetProgressPct()));
+		LogAndScreen(5, FColor::White, FString::Printf(TEXT("(SEQUENCE) Current step index = %i, progress = %f"), CurrentObjectiveIndex, Objectives[CurrentObjectiveIndex]->GetProgressPct()), true);
 		TotalProgress = ProgressPerObjective * (CurrentObjectiveIndex + Objectives[CurrentObjectiveIndex]->GetProgressPct());
 	}
 	else
@@ -22,19 +22,19 @@ void AObjectiveSet::UpdateProgress()
 			{
 			case ECombinerType::AND:
 				TotalProgress += ProgressPerObjective * Objective->GetProgressPct();
-				LogAndScreen(5, FColor::White, FString::Printf(TEXT("(AND) Adding progress for '%s' (%f)"), *Objective->Name.ToString(), Objective->GetProgressPct()));
+				LogAndScreen(5, FColor::White, FString::Printf(TEXT("(AND) Adding progress for '%s' (%f)"), *Objective->Name.ToString(), Objective->GetProgressPct()), true);
 				break;
 			case ECombinerType::OR:
 				if (Objective->GetProgressPct() > TotalProgress)
 				{
 					TotalProgress = Objective->GetProgressPct();
-					LogAndScreen(5, FColor::White, FString::Printf(TEXT("(OR) Setting best progress from '%s' (%f)"), *Objective->Name.ToString(), Objective->GetProgressPct()));
+					LogAndScreen(5, FColor::White, FString::Printf(TEXT("(OR) Setting best progress from '%s' (%f)"), *Objective->Name.ToString(), Objective->GetProgressPct()), true);
 				}
 				break;
 			}
 		}
 	}
-	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Total progress for '%s' (%f)"), *Name.ToString(), TotalProgress));
+	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Total progress for '%s' (%f)"), *Name.ToString(), TotalProgress), true);
 	SetProgressPct(TotalProgress);
 }
 
@@ -95,22 +95,18 @@ void AObjectiveSet::HandleSubObjectiveProgress()
 void AObjectiveSet::HandleSubObjectiveComplete()
 {
 	HandleSubObjectiveProgress();
-	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Objective set complete for '%s'"), *Name.ToString()));
+	LogAndScreen(5, FColor::White, FString::Printf(TEXT("Subobjective complete for '%s'"), *Name.ToString()));
 	if (CombinerType == ECombinerType::SEQUENCE)
 	{
 		if (CurrentObjectiveIndex < Objectives.Num() && Objectives[CurrentObjectiveIndex]->IsComplete())
 		{
-			LogAndScreen(5, FColor::White, FString::Printf(TEXT("Deactivating index %d"), CurrentObjectiveIndex));
+			LogAndScreen(5, FColor::White, FString::Printf(TEXT("Deactivating index %d"), CurrentObjectiveIndex), true);
 			DeactivateSubObjective(Objectives[CurrentObjectiveIndex++]);
 			if (CurrentObjectiveIndex < Objectives.Num())
 			{
-				LogAndScreen(5, FColor::White, FString::Printf(TEXT("Activating index %d"), CurrentObjectiveIndex));
+				LogAndScreen(5, FColor::White, FString::Printf(TEXT("Activating index %d"), CurrentObjectiveIndex), true);
 				ActivateSubObjective(Objectives[CurrentObjectiveIndex]);
 			}
-		}
-		else
-		{
-			LogAndScreen(5, FColor::White, TEXT("Not advancing objective for some reason"));
 		}
 	}
 }
