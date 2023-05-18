@@ -44,7 +44,7 @@ public:
 	FOnFail OnFail;
 
 	// Returns the current progress for this objective
-	UFUNCTION(BlueprintGetter)
+	UFUNCTION(BlueprintCallable)
 	float GetProgressPct() const { return ProgressPct; }
 
 	// Returns whether our progress is 100% (accounting for potential floating point errors)
