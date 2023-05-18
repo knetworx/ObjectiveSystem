@@ -55,14 +55,23 @@ void UObjectiveSubsystem::LogAndScreen(float Duration, const FColor& Color, cons
 	}
 }
 
+void UObjectiveSubsystem::ForceReset(bool bOnlyActive /*= false*/)
+{
+	OnReset.Broadcast(bOnlyActive);
+}
+
 void UObjectiveSubsystem::OnMissionComplete()
 {
 	LogAndScreen(10, FColor::Green, FString::Printf(TEXT("MISSION COMPLETE: %s"), *ActiveMission->Name.ToString()));
 	DeactivateCurrentMission();
+	// On success, reset all objectives so they can be completed again in the future
+	ForceReset(false);
 }
 
 void UObjectiveSubsystem::OnMissionFail()
 {
 	LogAndScreen(10, FColor::Red, FString::Printf(TEXT("MISSION FAILED: %s"), *ActiveMission->Name.ToString()));
 	DeactivateCurrentMission();
+	// On fail, only reset progress of active objectives, so the mission can be continued where it was left off
+	ForceReset(true);
 }

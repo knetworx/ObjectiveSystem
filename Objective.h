@@ -10,16 +10,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnProgress);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnComplete);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnFail);
 
-UENUM()
-enum class EObjectiveType : uint8
-{
-	INVALID,
-	KILL,
-	LOCATION,
-	ACTIVATE,
-	SET
-};
-
 /**
  * 
  */
@@ -29,17 +19,17 @@ class FIRSTPERSONPROJECT_API AObjective : public AActor
 	GENERATED_BODY()
 
 protected:
-	AObjective() { ObjectiveType = EObjectiveType::INVALID; }
+	AObjective();
 
 	UFUNCTION(BlueprintCallable)
 	void SetProgressPct(float Pct);
 
 public:
+
+	virtual void BeginPlay() override;
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	FName Name;
-
-	UPROPERTY(BlueprintReadOnly)
-	EObjectiveType ObjectiveType;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsActive = false;
@@ -85,6 +75,14 @@ public:
 
 	virtual void GenerateProgressReport();
 
+	virtual void Tick(float DeltaTime) override;
+
+	virtual FVector GetLocationOfTarget() { return FVector::ZeroVector; }
+
 private:
+
+	UFUNCTION()
+	void HandleReset(bool bOnlyActiveObjectives = false);
+
 	float ProgressPct;
 };

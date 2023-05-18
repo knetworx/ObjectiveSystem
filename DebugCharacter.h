@@ -4,32 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "DebugCharacter.h"
-#include "EnemyCharacter.generated.h"
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathDelegate);
+#include "DebugCharacter.generated.h"
 
 UCLASS()
-class FIRSTPERSONPROJECT_API AEnemyCharacter : public ADebugCharacter
+class FIRSTPERSONPROJECT_API ADebugCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AEnemyCharacter();
-
-	UPROPERTY(BlueprintAssignable)
-	FOnDeathDelegate OnDeath;
-
-	UFUNCTION(BlueprintCallable)
-	void BP_OnDeath();
+	ADebugCharacter();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 };

@@ -16,7 +16,6 @@ class FIRSTPERSONPROJECT_API AObjectiveKill : public AObjective
 	GENERATED_BODY()
 	
 public:
-	AObjectiveKill() { ObjectiveType = EObjectiveType::KILL; }
 
 	// The enemy we want to kill
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
@@ -25,6 +24,8 @@ public:
 	void Activate() override;
 
 	void Deactivate() override;
+
+	FVector GetLocationOfTarget() { return TargetCharacter ? TargetCharacter->GetActorLocation() : FVector::ZeroVector; }
 
 private:
 

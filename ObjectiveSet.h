@@ -25,8 +25,6 @@ class FIRSTPERSONPROJECT_API AObjectiveSet : public AObjective
 	
 public:
 
-	AObjectiveSet() { ObjectiveType = EObjectiveType::SET; }
-
 	// Collection of objectives that will be combined for this set
 	UPROPERTY(EditAnywhere)
 	TArray<AObjective*> Objectives;

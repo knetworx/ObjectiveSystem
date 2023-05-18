@@ -9,6 +9,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionActivated, AObjectiveSet*, Mission);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMissionDeactivated, AObjectiveSet*, Mission);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReset, bool, bOnlyActiveObjectives);
 
 /**
  * 
@@ -28,6 +29,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnMissionDeactivated OnMissionDeactivated;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnReset OnReset;
+
 	// Add a mission (can be a single Objective or an ObjectiveSet for missions containing multiple objectives)
 	UFUNCTION(BlueprintCallable)
 	void ActivateMission(AObjectiveSet* Mission);
@@ -40,6 +44,9 @@ public:
 
 	// Helper function to print both to the log and to the screen to see progress
 	void LogAndScreen(float Duration, const FColor& Color, const FString& FormattedMessage, bool bIsDebug = false);
+
+	UFUNCTION(BlueprintCallable)
+	void ForceReset(bool bOnlyActive = false);
 
 private:
 	TObjectPtr<AObjectiveSet> ActiveMission;

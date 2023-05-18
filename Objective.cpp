@@ -3,6 +3,12 @@
 
 #include "Objective.h"
 #include "ObjectiveSubsystem.h"
+#include "VisualLogger/VisualLogger.h"
+
+AObjective::AObjective()
+{
+	PrimaryActorTick.bCanEverTick = true;
+}
 
 void AObjective::SetProgressPct(float Pct)
 {
@@ -19,12 +25,31 @@ void AObjective::SetProgressPct(float Pct)
 	{
 		// Completion callback may end up being unnecessary, maybe just always broadcast progress if it changes
 		LogAndScreen(5, FColor::Cyan, FString::Printf(TEXT("Broadcasting OnComplete for '%s'"), *Name.ToString()), true);
+#if ENABLE_VISUAL_LOG
+		FVector TargetLocation = GetLocationOfTarget();
+		UObjectiveSubsystem* ObjSub = GetGameInstance()->GetSubsystem<UObjectiveSubsystem>();
+		if (ObjSub && TargetLocation != FVector::ZeroVector)
+		{
+			UE_VLOG_LOCATION(ObjSub, LogTemp, Verbose, TargetLocation + FVector::UpVector * 500, 100, FColor::Green, TEXT(""));
+			UE_VLOG_ARROW(ObjSub, LogTemp, Verbose, TargetLocation + FVector::UpVector * 500, TargetLocation + FVector::UpVector * 125, FColor::Green, TEXT("%s"), *Name.ToString());
+		}
+#endif
 		OnComplete.Broadcast();
 	}
 	else
 	{
 		LogAndScreen(5, FColor::Cyan, FString::Printf(TEXT("Broadcasting OnProgress for '%s'"), *Name.ToString()), true);
 		OnProgress.Broadcast();
+	}
+}
+
+void AObjective::BeginPlay()
+{
+	Super::BeginPlay();
+	UObjectiveSubsystem* ObjectiveSubsystem = GetGameInstance()->GetSubsystem<UObjectiveSubsystem>();
+	if (ObjectiveSubsystem)
+	{
+		ObjectiveSubsystem->OnReset.AddDynamic(this, &AObjective::HandleReset);
 	}
 }
 
@@ -80,4 +105,29 @@ void AObjective::LogAndScreen(float Duration, const FColor& Color, const FString
 void AObjective::GenerateProgressReport()
 {
 	LogAndScreen(20, FColor::Purple, FString::Printf(TEXT("%s%s: %.2f"), (bIsActive ? TEXT("+ ") : TEXT("- ")), *Name.ToString(), GetProgressPct()));
+}
+
+void AObjective::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+#if ENABLE_VISUAL_LOG
+	FVector TargetLocation = GetLocationOfTarget();
+	UObjectiveSubsystem* ObjSub = GetGameInstance()->GetSubsystem<UObjectiveSubsystem>();
+	if (ObjSub && TargetLocation != FVector::ZeroVector && (bIsActive || IsComplete()))
+	{
+		FColor Color = IsComplete() ? FColor::Green : bIsActive ? FColor::Blue : FColor::Red;
+		UE_VLOG_LOCATION(ObjSub, LogTemp, Verbose, TargetLocation + FVector::UpVector * 500, 100, Color, TEXT(""));
+		UE_VLOG_ARROW(ObjSub, LogTemp, Verbose, TargetLocation + FVector::UpVector * 500, TargetLocation + FVector::UpVector * 125, Color, TEXT("%s"), *Name.ToString());
+	}
+#endif
+
+}
+
+void AObjective::HandleReset(bool bOnlyActiveObjectives /*= false*/)
+{
+	if (!bOnlyActiveObjectives || bIsActive)
+	{
+		SetProgressPct(0.0f);
+	}
 }

@@ -17,8 +17,6 @@ class FIRSTPERSONPROJECT_API AObjectiveActivate : public AObjective
 	
 public:
 
-	AObjectiveActivate() { ObjectiveType = EObjectiveType::ACTIVATE; }
-
 	// The object that must be activated
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TObjectPtr<AActivatableActor> TargetObject;
@@ -26,6 +24,8 @@ public:
 	void Activate() override;
 	
 	void Deactivate() override;
+	
+	FVector GetLocationOfTarget() { return TargetObject ? TargetObject->GetActorLocation() : FVector::ZeroVector; }
 	
 private:
 
